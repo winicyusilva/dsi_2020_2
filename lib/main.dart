@@ -31,31 +31,45 @@ class _RandomWordsState extends State<RandomWords> {
           if (index >= _suggestions.length) {
             _suggestions.addAll(generateWordPairs().take(10));
           }
-          return _buildRow(_suggestions[index]);
+          return _buildRow(_suggestions[index],index);
         });
   }
 
-  Widget _buildRow(WordPair pair) {
+  Widget _buildRow(WordPair pair, index) {
     final alreadySaved = _saved.contains(pair);
-    return ListTile(
-      title: Text(
-        pair.asPascalCase,
-        style: _biggerFont,
-      ),
-      trailing: Icon(
-        alreadySaved ? Icons.favorite : Icons.favorite_border,
-        color: alreadySaved ? Colors.red : null,
-        semanticLabel: alreadySaved ? 'Remove from saved' : 'Save',
-      ),
-      onTap: () {
+    return Dismissible(
+      background: Container(color: Colors.red),
+      key: Key(pair.asPascalCase),
+      onDismissed: (direction) {
         setState(() {
-          if (alreadySaved) {
+          _suggestions.remove(pair);
+          if (_saved.contains(pair)) {
             _saved.remove(pair);
-          } else {
-            _saved.add(pair);
           }
         });
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$pair dismissed')));
       },
+      child: ListTile(
+        title: Text(
+          pair.asPascalCase,
+          style: _biggerFont,
+        ),
+        trailing: Icon(
+          alreadySaved ? Icons.favorite : Icons.favorite_border,
+          color: alreadySaved ? Colors.red : null,
+          semanticLabel: alreadySaved ? 'Remove from saved' : 'Save',
+        ),
+        onTap: () {
+          setState(() {
+            if (alreadySaved) {
+              _saved.remove(pair);
+            } else {
+              _saved.add(pair);
+            }
+          });
+        },
+      ),
     );
   }
 
